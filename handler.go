@@ -1,7 +1,7 @@
 
 package ormc
 
-import "github.com/tinywasm/modfind"
+import "webtyp.com/modfind"
 
 // Ormc is the code generator handler for the ormc tool.
 type Generator struct {

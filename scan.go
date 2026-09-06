@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tinywasm/modfind"
+	"webtyp.com/modfind"
 )
 
 // ScanModules syncs the DB schema of every discovered module to the injected

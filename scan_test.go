@@ -1,6 +1,6 @@
 package ormc
 
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinywasm/modfind"
+	"webtyp.com/modfind"
 )
 
 type mockSyncer struct {
@@ -31,7 +31,7 @@ func TestScanModules(t *testing.T) {
 	writableDir := filepath.Join(tmpDir, "writable")
 	os.MkdirAll(writableDir, 0755)
 	os.WriteFile(filepath.Join(writableDir, "model.go"), []byte(`package main
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -45,7 +45,7 @@ var UserModel = model.Definition{
 	readonlyDir := filepath.Join(tmpDir, "readonly")
 	os.MkdirAll(readonlyDir, 0755)
 	os.WriteFile(filepath.Join(readonlyDir, "model_orm.go"), []byte(`package readonly
-import "github.com/tinywasm/fmt"
+import "webtyp.com/fmt"
 func (m *Item) ModelName() string { return "items" }
 var _schemaItem = []model.Field{{Name: "id", Type: model.FieldText}}
 `), 0644)

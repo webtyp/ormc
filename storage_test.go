@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/model"
+	"webtyp.com/model"
 )
 
 func parseAndResolve(t *testing.T, g *Generator, src string) ([]StructInfo, error) {
@@ -33,7 +33,7 @@ func parseAndResolve(t *testing.T, g *Generator, src string) ([]StructInfo, erro
 
 func TestField_WidgetRemoved_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -53,7 +53,7 @@ var UserModel = model.Definition{
 
 func TestField_MissingType_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -73,7 +73,7 @@ var UserModel = model.Definition{
 
 func TestComposition_NilArgument_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ParentModel = model.Definition{
 	Name: "parent",
 	Fields: model.Fields{
@@ -93,7 +93,7 @@ var ParentModel = model.Definition{
 
 func TestComposition_MissingArgument_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ParentModel = model.Definition{
 	Name: "parent",
 	Fields: model.Fields{
@@ -113,7 +113,7 @@ var ParentModel = model.Definition{
 
 func TestComposition_RefContradiction_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ChildModel = model.Definition{Name: "child"}
 var ParentModel = model.Definition{
 	Name: "parent",
@@ -135,8 +135,8 @@ var ParentModel = model.Definition{
 func TestKind_NonSelfContainedArgument_HardError(t *testing.T) {
 	src := `package p
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 var localOptions = 5
 var UserModel = model.Definition{
@@ -158,7 +158,7 @@ var UserModel = model.Definition{
 
 func TestKind_UnknownPackageAlias_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -178,7 +178,7 @@ var UserModel = model.Definition{
 
 func TestKind_LocalKind_HardError(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 func LocalKind() model.Kind { return nil }
 var UserModel = model.Definition{
 	Name: "user",
@@ -200,8 +200,8 @@ var UserModel = model.Definition{
 func TestProbe_Failure_SurfacesOutputVerbatim(t *testing.T) {
 	src := `package p
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 var UserModel = model.Definition{
 	Name: "user",
@@ -226,8 +226,8 @@ var UserModel = model.Definition{
 func TestProbe_CompositionKindStorage_HardError(t *testing.T) {
 	src := `package p
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 var UserModel = model.Definition{
 	Name: "user",
@@ -252,8 +252,8 @@ var UserModel = model.Definition{
 func TestProbe_GeneratedSource_And_Resolution(t *testing.T) {
 	src := `package p
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 var UserModel = model.Definition{
 	Name: "user",
@@ -272,7 +272,7 @@ var UserModel = model.Definition{
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(captured, `k0 "github.com/tinywasm/input"`) {
+	if !strings.Contains(captured, `k0 "webtyp.com/input"`) {
 		t.Errorf("expected probe source to import the kind's package under a k0 alias, got:\n%s", captured)
 	}
 	if !strings.Contains(captured, "k0.Email()") {
@@ -289,8 +289,8 @@ var UserModel = model.Definition{
 func TestGenerate_ProbedKind_EmitsPackageImport(t *testing.T) {
 	src := `package p
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 var UserModel = model.Definition{
 	Name: "user",
@@ -328,7 +328,7 @@ var UserModel = model.Definition{
 		t.Fatal(err)
 	}
 	s := string(content)
-	if !strings.Contains(s, `"github.com/tinywasm/input"`) {
+	if !strings.Contains(s, `"webtyp.com/input"`) {
 		t.Errorf("expected generated file to import the probed kind's package, got:\n%s", s)
 	}
 	if !strings.Contains(s, "Type: input.Email()") {
@@ -347,8 +347,8 @@ func TestProbe_Cache_HitAndInvalidate(t *testing.T) {
 
 	src := `package p
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 var UserModel = model.Definition{
 	Name: "user",

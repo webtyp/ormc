@@ -21,7 +21,7 @@ the binary.
 The ecosystem forbids `reflect` (O(1) in WASM, smaller binary, compile-time type safety — see
 [ARQUITECTURE.md](ARQUITECTURE.md)). The price of "no reflect" is that the codec must exist as **concrete
 generated code**. So the volume is the deliberate trade for reflection-free serialization: what other ORMs
-do at runtime with reflection, `tinywasm/orm` does at build time as plain methods.
+do at runtime with reflection, `webtyp/orm` does at build time as plain methods.
 
 ## Why unused generation does **not** bloat the binary
 

@@ -1,7 +1,7 @@
 # ormc
 <img src="docs/img/badges.svg">
 
-Go code generator for `tinywasm/model` definitions: reads hand-written
+Go code generator for `webtyp/model` definitions: reads hand-written
 `model.Definition` literals via AST and emits the concrete struct, schema,
 codec, validation, and typed query helpers the runtime consumes.
 
@@ -10,7 +10,7 @@ codec, validation, and typed query helpers the runtime consumes.
 Install the CLI:
 
 ```bash
-go install github.com/tinywasm/ormc/cmd/ormc@latest
+go install webtyp.com/ormc/cmd/ormc@latest
 ```
 
 Author a `model.go` (or `models.go`) with one or more `model.Definition`
@@ -21,8 +21,8 @@ constructor expression — never a bare enum, never a struct tag:
 package myapp
 
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/input"
+	"webtyp.com/model"
+	"webtyp.com/input"
 )
 
 var AddressModel = model.Definition{
@@ -61,7 +61,7 @@ through a cached, generation-time dependency probe — see
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the resolution order and
 failure modes.
 
-Inside [tinywasm/app](https://github.com/tinywasm/app)'s dev console, ormc
+Inside [webtyp/app](https://github.com/webtyp/app)'s dev console, ormc
 runs as a live TUI handler instead of the standalone CLI: `New()` returns a
 `*Generator` implementing the handler contract (`Name()`,
 `SupportedExtensions()`, `NewFileEvent(...)`), so the tool regenerates the

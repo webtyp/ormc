@@ -1,7 +1,7 @@
 # DB Sync — visión tool-driven (la herramienta sincroniza, no el proyecto)
 
 > El proyecto del usuario importa **solo `orm`** (agnóstico) y **no contiene código de sync**.
-> `tinywasm/app` (la herramienta) observa los ficheros y aplica el schema a una DB que **ella** posee.
+> `webtyp/app` (la herramienta) observa los ficheros y aplica el schema a una DB que **ella** posee.
 > `ormc` es **ciego a la base de datos**: opera solo con la interfaz `SchemaSyncer` inyectada.
 >
 > **Una sola lectura.** Al arrancar, `devwatch` hace **un único `filepath.Walk`** del proyecto y va
@@ -13,12 +13,12 @@
 
 ```mermaid
 flowchart TD
-    Env["tinywasm/app lee .env<br/>DATABASE_CONNECTION=postgres://... | sqlite://..."]
+    Env["webtyp/app lee .env<br/>DATABASE_CONNECTION=postgres://... | sqlite://..."]
     Env --> Open["orm.Open(dsn)<br/>(raíz, agnóstico — parsea el scheme)"]
     Open --> Registry["Registry: busca el Factory del scheme<br/>(adapters se auto-registran en init)"]
     Registry --> Pick{"¿scheme?"}
-    Pick -- "postgres" --> PG["tinywasm/postgres<br/>Executor + Compiler"]
-    Pick -- "sqlite / in-memory" --> SQ["tinywasm/sqlt<br/>Executor + Compiler"]
+    Pick -- "postgres" --> PG["webtyp/postgres<br/>Executor + Compiler"]
+    Pick -- "sqlite / in-memory" --> SQ["webtyp/sqlt<br/>Executor + Compiler"]
     PG --> DB["*orm.DB listo"]
     SQ --> DB
     DB --> Inject["app envuelve db en dbSyncer (SchemaSyncer)<br/>y lo inyecta: ormc.Generator.SetSyncer(dbSyncer)"]
@@ -30,7 +30,7 @@ flowchart TD
 flowchart TD
     Mode{"¿Cómo se ejecuta ormc?"}
 
-    Mode -- "A) Integrado en tinywasm/app" --> WatchScan["devwatch: UN solo filepath.Walk al arrancar"]
+    Mode -- "A) Integrado en webtyp/app" --> WatchScan["devwatch: UN solo filepath.Walk al arrancar"]
     WatchScan --> DepGate["depfind: ThisFileIsMine?<br/>(gate de propiedad por manejador)"]
     DepGate --> PerFile["Por cada fichero: handler.NewFileEvent(file, ext, path, evt)"]
     PerFile --> LiveEdit["Edición en vivo: el watcher emite<br/>UN evento por el fichero que cambió"]
@@ -96,7 +96,7 @@ flowchart TD
 
 | Capa | Responsabilidad | Conoce la DB |
 |------|-----------------|--------------|
-| **tinywasm/app** (herramienta) | Lee `.env`, `orm.Open`, construye `*orm.DB`, inyecta `dbSyncer` | Sí (elige motor) |
+| **webtyp/app** (herramienta) | Lee `.env`, `orm.Open`, construye `*orm.DB`, inyecta `dbSyncer` | Sí (elige motor) |
 | **devwatch** | UN walk al arrancar + eventos en vivo; gate depfind por fichero | No |
 | **ormc.Generator** | Procesa **el fichero recibido**, regenera `<file>_orm.go`, llama `SchemaSyncer` | **No** (ciego) |
 | **orm raíz** | `Open`/`Register`, `SyncSchema`/`Sync`, emite `Action`s | No (agnóstico) |

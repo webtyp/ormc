@@ -23,14 +23,14 @@ chicken-and-egg — see model repo `docs/ARCHITECTURE.md` §9).
 
 A comment above each kind constructor, read from the package source.
 
-- Violates the harness doctrine (`tinywasm/app/docs/CONSTRUCTION_HARNESS.md`):
+- Violates the harness doctrine (`webtyp/app/docs/CONSTRUCTION_HARNESS.md`):
   it is prose the compiler cannot verify, a mandatory step authors must
   remember, and a **second copy** of a fact `Storage()` already states in
   typed code — the copies can silently contradict each other
   (`//ormc:storage int` above a text kind compiles fine and generates wrong
   code).
 - Was partially implemented (directives briefly existed in
-  `tinywasm/input`'s working tree, never published; a cloud agent
+  `webtyp/input`'s working tree, never published; a cloud agent
   implementing the ormc side was stopped and discarded).
 
 ### 2. Embedded storage-marker types — REJECTED

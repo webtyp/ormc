@@ -5,25 +5,25 @@
 
 ## What ormc is
 
-`github.com/tinywasm/ormc` is the **code generator** of the tinywasm data
+`webtyp.com/ormc` is the **code generator** of the webtyp data
 stack — nothing else. It reads hand-written `model.Definition` literals and
 emits the concrete Go artifacts the runtime consumes: the plain struct, the
 `Fielder` methods (`Schema()`, `Pointers()`, codec), `Validate()`, typed
 query-field helpers (`User_.Email`), and DDL FK metadata (`SchemaExt()`).
 
-It was split out of `github.com/tinywasm/orm` (2026-07-10). The split
+It was split out of `webtyp.com/orm` (2026-07-10). The split
 boundaries:
 
 | Repo | Role | ormc's relationship |
 |---|---|---|
-| `tinywasm/model` | field/kind contract (`Definition`, `Field`, `Kind`) | ormc's INPUT contract |
-| `tinywasm/ormc` | this repo: generator + `cmd/ormc` | — |
-| `tinywasm/ddlc` | DDL migration tool (`tui`) | not a dependency of ormc anymore |
-| `tinywasm/orm` | query/scan/sync runtime | imported by generated read helpers |
-| `tinywasm/sqlmcp` | MCP provider over the stack | consumer, not a dependency |
+| `webtyp/model` | field/kind contract (`Definition`, `Field`, `Kind`) | ormc's INPUT contract |
+| `webtyp/ormc` | this repo: generator + `cmd/ormc` | — |
+| `webtyp/ddlc` | DDL migration tool (`tui`) | not a dependency of ormc anymore |
+| `webtyp/orm` | query/scan/sync runtime | imported by generated read helpers |
+| `webtyp/sqlmcp` | MCP provider over the stack | consumer, not a dependency |
 
 ormc runs in two modes: standalone CLI (`cmd/ormc`) and **live watcher**
-inside the dev tool (`tinywasm/app` feeds file events; see
+inside the dev tool (`webtyp/app` feeds file events; see
 [SYNC_DESIGN.md](SYNC_DESIGN.md) and
 [diagrams/DB_SYNC.md](diagrams/DB_SYNC.md)). The watcher mode is a hard
 architectural constraint: generation runs on every file save, often against
@@ -63,7 +63,7 @@ guesses):
 ormc parses the Definition literal with `go/ast`. It **never compiles or
 executes the user's package**. Rationale (settled in the model repo,
 `docs/ARCHITECTURE.md` §9,
-<https://github.com/tinywasm/model/blob/main/docs/ARCHITECTURE.md>):
+<https://github.com/webtyp/model/blob/main/docs/ARCHITECTURE.md>):
 
 1. The watcher regenerates on every save; mid-edit code frequently does not
    compile — exactly when regeneration is needed.
@@ -99,9 +99,9 @@ runtime value, no longer a constant in the user's source. Resolution order:
 
 Generated files (`*_orm.go`) import:
 
-- `tinywasm/model` — always (schema types).
-- `tinywasm/orm` — when the model has DB role (query helpers `*orm.QB`).
-- The kind constructors' packages (e.g. `tinywasm/input`) — `Schema()`
+- `webtyp/model` — always (schema types).
+- `webtyp/orm` — when the model has DB role (query helpers `*orm.QB`).
+- The kind constructors' packages (e.g. `webtyp/input`) — `Schema()`
   re-emits every `Type:` constructor expression **verbatim**; ormc passes
   kinds through without understanding them.
 

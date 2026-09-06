@@ -22,7 +22,7 @@ func writeTemp(t *testing.T, content string) string {
 
 func TestParseDefinition_Basic(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -62,7 +62,7 @@ var UserModel = model.Definition{
 
 func TestParseDefinition_Exclude(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -90,7 +90,7 @@ var UserModel = model.Definition{
 
 func TestGenerate_E2E(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ChildModel = model.Definition{
 	Name: "child",
 	Fields: model.Fields{
@@ -157,7 +157,7 @@ var ParentModel = model.Definition{
 
 func TestGenerate_RawField(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ModelModel = model.Definition{
 	Name: "model",
 	Fields: model.Fields{
@@ -203,7 +203,7 @@ var ModelModel = model.Definition{
 
 func TestGenerate_OmitEmpty(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ModelModel = model.Definition{
 	Name: "model",
 	Fields: model.Fields{
@@ -244,7 +244,7 @@ var ModelModel = model.Definition{
 
 func TestGenerate_FK_SchemaExt(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{ Name: "user" }
 var SessionModel = model.Definition{
 	Name: "session",
@@ -288,7 +288,7 @@ var SessionModel = model.Definition{
 
 func TestGenerate_Exclude_Parallelism(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var UserModel = model.Definition{
 	Name: "user",
 	Fields: model.Fields{
@@ -339,7 +339,7 @@ var UserModel = model.Definition{
 
 func TestGenerate_AlwaysOnHelper(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var ItemModel = model.Definition{
 	Name: "item",
 	Fields: model.Fields{
@@ -399,7 +399,7 @@ var NoDBModel = model.Definition{
 
 func TestGenerate_UnconditionalValidate(t *testing.T) {
 	src := `package p
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 var PingArgsModel = model.Definition{
 	Name: "ping_args",
 	Fields: model.Fields{

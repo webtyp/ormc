@@ -5,7 +5,7 @@ import (
 	"go/token"
 )
 
-// NewFileEvent implements the file-event contract for watchers (e.g. tinywasm/app's devwatch).
+// NewFileEvent implements the file-event contract for watchers (e.g. webtyp/app's devwatch).
 func (g *Generator) NewFileEvent(fileName, extension, filePath, event string) error {
 	if fileName != "model.go" && fileName != "models.go" {
 		return nil

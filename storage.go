@@ -4,8 +4,8 @@ import (
 	"go/ast"
 	"strings"
 
-	"github.com/tinywasm/fmt"
-	"github.com/tinywasm/model"
+	"webtyp.com/fmt"
+	"webtyp.com/model"
 )
 
 var builtinKinds = map[string]model.FieldType{
@@ -48,11 +48,11 @@ func (g *Generator) resolveStorage(infos []StructInfo, file *ast.File) error {
 			if path == "" {
 				// Try common aliases if not found in imports
 				if selector == "model" {
-					path = "github.com/tinywasm/model"
+					path = "webtyp.com/model"
 				}
 			}
 
-			if path == "github.com/tinywasm/model" || (path == "" && selector == "model") {
+			if path == "webtyp.com/model" || (path == "" && selector == "model") {
 				if t, ok := builtinKinds[constructor]; ok {
 					fi.Type = t
 					continue

@@ -4,7 +4,7 @@
 // mocking the toolchain.
 package fixturekind
 
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 
 type customKind struct{}
 

@@ -1,20 +1,20 @@
 // Separate test module: isolates codegen fixture deps (orm runtime for
-// generated models) so the root github.com/tinywasm/ormc module stays
+// generated models) so the root webtyp.com/ormc module stays
 // fmt + model + modfind only.
-module github.com/tinywasm/ormc/tests
+module webtyp.com/ormc/tests
 
 go 1.25.2
 
 require (
-	github.com/tinywasm/model v0.1.7
-	github.com/tinywasm/orm v0.12.0
-	github.com/tinywasm/ormc v0.1.13
+	webtyp.com/model v0.1.7
+	webtyp.com/orm v0.12.0
+	webtyp.com/ormc v0.1.13
 )
 
 require (
-	github.com/tinywasm/fmt v0.25.7 // indirect
-	github.com/tinywasm/modfind v0.0.4 // indirect
-	github.com/tinywasm/storage v0.0.6 // indirect
+	webtyp.com/fmt v0.25.7 // indirect
+	webtyp.com/modfind v0.0.4 // indirect
+	webtyp.com/storage v0.0.6 // indirect
 )
 
-replace github.com/tinywasm/ormc => ..
+replace webtyp.com/ormc => ..

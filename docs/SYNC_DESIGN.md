@@ -1,13 +1,13 @@
 # Design Rationale & Honest Trade-offs — Tool-driven Dev Schema Sync
 
-> Honest assessment of the architecture behind `db.Sync`/`db.SyncSchema` and the `tinywasm/app`
+> Honest assessment of the architecture behind `db.Sync`/`db.SyncSchema` and the `webtyp/app`
 > hot-schema-sync loop. Not marketing — the goal is to know exactly what we're buying and what we're
 > deferring. See [DB_SYNC diagram](diagrams/DB_SYNC.md) for the flow and
 > [ARCHITECTURE.md](ARCHITECTURE.md) for the generator's contract.
 
 ## The approach in one paragraph
 
-While developing, the dev tool (`tinywasm/app`) watches `model.go` files. On each change it
+While developing, the dev tool (`webtyp/app`) watches `model.go` files. On each change it
 regenerates the ORM code (`ormc`, AST-based) and **applies an additive schema reconcile directly to
 the dev database in real time** — add tables/columns, rename via an `old_name` hint, drop only empty
 columns. There are **no migration files**: the Go struct is the desired state, git is the model's
@@ -65,7 +65,7 @@ thing — provided we're clear-eyed about the same trade-offs those tools carry.
    the hard part.**
 2. **"git is the history" is only half-true — and the build log is not a substitute.** Git records
    the *model's* history, not the *DB's applied mutations*. ormc has its own logger in the
-   `tinywasm/app` build tab and **must surface every action and error there — nothing omitted**; that is
+   `webtyp/app` build tab and **must surface every action and error there — nothing omitted**; that is
    essential for visibility. But that log is **ephemeral** (per-session, scrolls away, not
    machine-readable, not tied to DB state). It is *not* a **durable, replayable audit log**: you
    cannot reconstruct or roll back the DB's evolution from it, and additive sync is not invertible.

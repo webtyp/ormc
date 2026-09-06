@@ -1,6 +1,6 @@
 package ormc
 
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 
 import (
 	"go/ast"

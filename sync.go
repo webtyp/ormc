@@ -1,10 +1,10 @@
 package ormc
 
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 
 
 // SchemaSyncer applies a parsed table schema. Implemented by the consumer
-// (tinywasm/app) over *orm.DB; ormc only ever sees this interface.
+// (webtyp/app) over *orm.DB; ormc only ever sees this interface.
 type SchemaSyncer interface {
 	SyncSchema(table string, fields []model.Field) error
 }

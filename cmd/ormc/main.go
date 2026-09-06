@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/tinywasm/ormc"
+	"webtyp.com/ormc"
 )
 
 func main() {

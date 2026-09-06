@@ -7,8 +7,8 @@
 package fixtureuse
 
 import (
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/ormc/tests/fixturekind"
+	"webtyp.com/model"
+	"webtyp.com/ormc/tests/fixturekind"
 )
 
 var FixtureModel = model.Definition{

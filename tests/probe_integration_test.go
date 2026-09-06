@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/ormc"
+	"webtyp.com/ormc"
 )
 
 // TestProbeIntegration_RealGoRun is the ONE integration test (plan §Stage 4)

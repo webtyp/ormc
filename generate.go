@@ -1,13 +1,13 @@
 package ormc
 
-import "github.com/tinywasm/model"
+import "webtyp.com/model"
 
 import (
 	"os"
 	"sort"
 	"strings"
 
-	"github.com/tinywasm/fmt"
+	"webtyp.com/fmt"
 )
 
 // hasExcludedField reports whether the Definition drops any field from the
@@ -35,7 +35,7 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 
 	hasORM := false
 	// kindImports collects the packages that non-model kind constructors
-	// (tinywasm/input kinds, project-custom kinds) live in, keyed by import path.
+	// (webtyp/input kinds, project-custom kinds) live in, keyed by import path.
 	kindImports := make(map[string]string) // path -> alias used in the scanned source
 	for _, info := range infos {
 		if !info.NoDB {
@@ -65,9 +65,9 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 	}
 
 	buf.Write("import (\n")
-	buf.Write("\t\"github.com/tinywasm/model\"\n")
+	buf.Write("\t\"webtyp.com/model\"\n")
 	if hasORM {
-		buf.Write("\t\"github.com/tinywasm/orm\"\n")
+		buf.Write("\t\"webtyp.com/orm\"\n")
 	}
 
 	if len(kindImports) > 0 {

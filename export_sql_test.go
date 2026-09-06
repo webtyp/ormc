@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/tinywasm/model"
+	"webtyp.com/model"
 )
 
 // exportDDLCalled is a test-only Exporter that records whether ExportDDL was
@@ -20,7 +20,7 @@ func (e *exportDDLCalled) ExportDDL(models []model.Model) (string, error) {
 }
 
 // TestExportSQL_NoModels_ReturnsErrNoModelsFound reproduces the reported bug:
-// tinywasm -tui against a project with no model.go/models.go files (e.g. a
+// webtyp -tui against a project with no model.go/models.go files (e.g. a
 // view-only project) still writes an empty config/schema.sql, because ExportSQL
 // silently returned ("", nil) — a "successful" empty result — for zero
 // models, instead of a distinguishable error. The button's Handler

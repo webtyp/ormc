@@ -242,6 +242,63 @@ var ModelModel = model.Definition{
 	}
 }
 
+func TestGenerate_ListHasNoSchema(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var ModelModel = model.Definition{
+	Name: "model",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "text", Type: model.Text()},
+	},
+}
+`
+	tmpFile := writeTemp(t, src)
+	g := New()
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, tmpFile, nil, parser.ParseComments)
+	infos, err := g.parseDefinitionsInFile(tmpFile)
+	if err == nil {
+		_ = g.resolveStorage(infos, node)
+	}
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = g.GenerateForFile(infos, tmpFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	genFile := strings.TrimSuffix(tmpFile, ".go") + "_orm.go"
+	content, err := os.ReadFile(genFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(content)
+
+	// The list keeps its traversal methods.
+	for _, want := range []string{
+		"func (s *ModelList) Len() int",
+		"func (s *ModelList) At(i int) model.Fielder",
+		"func (s *ModelList) Append() model.Fielder",
+	} {
+		if !strings.Contains(s, want) {
+			t.Errorf("missing traversal method %q", want)
+		}
+	}
+
+	// A list has no columns of its own: the two stubs must be absent. Match
+	// on the list receiver — Schema()/Pointers() legitimately appear on the
+	// element type in the same file.
+	if strings.Contains(s, "func (s *ModelList) Schema()") {
+		t.Error("generated list must not declare Schema(): a list has no columns of its own")
+	}
+	if strings.Contains(s, "func (s *ModelList) Pointers()") {
+		t.Error("generated list must not declare Pointers(): a list has no columns of its own")
+	}
+}
+
 func TestGenerate_FK_SchemaExt(t *testing.T) {
 	src := `package p
 import "webtyp.com/model"

@@ -303,8 +303,9 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 		}
 
 		buf.Write(fmt.Sprintf("type %sList []*%s\n\n", info.Name, info.Name))
-		buf.Write(fmt.Sprintf("func (s *%sList) Schema() []model.Field { return nil }\n", info.Name))
-		buf.Write(fmt.Sprintf("func (s *%sList) Pointers() []any     { return nil }\n", info.Name))
+		// A list exposes only traversal: it is a sequence of rows and has no columns of
+		// its own, so model.FielderSlice does not embed model.Fielder. The schema comes
+		// from the element, via At/Append.
 		buf.Write(fmt.Sprintf("func (s *%sList) Len() int             { return len(*s) }\n", info.Name))
 		buf.Write(fmt.Sprintf("func (s *%sList) At(i int) model.Fielder { return (*s)[i] }\n", info.Name))
 		buf.Write(fmt.Sprintf("func (s *%sList) Append() model.Fielder  { v := &%s{}; *s = append(*s, v); return v }\n", info.Name, info.Name))

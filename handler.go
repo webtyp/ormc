@@ -9,7 +9,7 @@ type Generator struct {
 	rootDir  string
 	skipTidy bool
 	syncer   SchemaSyncer
-	finder      *modfind.Finder
+	finder      modfind.Discoverer
 	cache       map[string]StructInfo
 	probeRunner ProbeRunner
 }
@@ -41,7 +41,7 @@ func (g *Generator) SetRootDir(dir string) {
 }
 
 // SetFinder injects the shared modfind.Finder (one go list across ssr/image/ormc).
-func (g *Generator) SetFinder(f *modfind.Finder) {
+func (g *Generator) SetFinder(f modfind.Discoverer) {
 	g.finder = f
 }
 

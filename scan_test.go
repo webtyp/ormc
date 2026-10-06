@@ -58,12 +58,10 @@ var _schemaItem = []model.Field{{Name: "id", Type: model.FieldText}}
 	syncer := &mockSyncer{}
 	g.SetSyncer(syncer)
 
-	finder := modfind.New()
-	finder.Seed(tmpDir, []modfind.Module{
+	g.SetFinder(fakeModules([]modfind.Module{
 		{Path: "main", Dir: writableDir, IsMain: true},
 		{Path: "readonly", Dir: readonlyDir, IsMain: false},
-	})
-	g.SetFinder(finder)
+	}))
 
 	err := g.ScanModules(tmpDir)
 	if err != nil {
@@ -111,11 +109,9 @@ func TestScanModules_EmptyReadonly(t *testing.T) {
 	syncer := &mockSyncer{}
 	g.SetSyncer(syncer)
 
-	finder := modfind.New()
-	finder.Seed(tmpDir, []modfind.Module{
+	g.SetFinder(fakeModules([]modfind.Module{
 		{Path: "readonly", Dir: readonlyDir, IsMain: false},
-	})
-	g.SetFinder(finder)
+	}))
 
 	err := g.ScanModules(tmpDir)
 	if err != nil {
@@ -125,3 +121,8 @@ func TestScanModules_EmptyReadonly(t *testing.T) {
 		t.Errorf("expected 0 synced tables, got %d", len(syncer.synced))
 	}
 }
+
+// fakeModules is the test double for modfind.Discoverer: it returns fixed modules.
+type fakeModules []modfind.Module
+
+func (f fakeModules) Discover(string) ([]modfind.Module, error) { return f, nil }

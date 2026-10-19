@@ -14,7 +14,7 @@ require (
 require (
 	webtyp.com/fmt v1.0.0 // indirect
 	webtyp.com/modfind v0.0.11 // indirect
-	webtyp.com/storage v0.1.4 // indirect
+	webtyp.com/storage v0.1.7 // indirect
 )
 
 replace webtyp.com/ormc => ..

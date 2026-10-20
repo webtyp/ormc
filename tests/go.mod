@@ -8,7 +8,7 @@ go 1.25.2
 require (
 	webtyp.com/model v0.2.4
 	webtyp.com/orm v0.12.8
-	webtyp.com/ormc v0.1.21
+	webtyp.com/ormc v0.1.22
 )
 
 require (

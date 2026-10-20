@@ -64,6 +64,14 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 		}
 	}
 
+	for _, info := range infos {
+		for _, f := range info.Fields {
+			if isInstant(f.GoType) {
+				kindImports[timeImportPath] = ""
+			}
+		}
+	}
+
 	buf.Write("import (\n")
 	buf.Write("\t\"webtyp.com/model\"\n")
 	if hasORM {
@@ -149,7 +157,13 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 			if !first {
 				buf.Write(", ")
 			}
-			buf.Write(fmt.Sprintf("&m.%s", f.Name))
+			if isInstant(f.GoType) {
+				// Storage, codecs and forms read integers through *int64; a typed instant has int64 as its
+				// underlying type, so its address converts without copying.
+				buf.Write(fmt.Sprintf("(*int64)(&m.%s)", f.Name))
+			} else {
+				buf.Write(fmt.Sprintf("&m.%s", f.Name))
+			}
 			first = false
 		}
 		buf.Write("} }\n\n")
@@ -168,7 +182,11 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 			case model.FieldRaw:
 				line = fmt.Sprintf("w.Raw(\"%s\", m.%s)", f.ColumnName, f.Name)
 			case model.FieldInt:
-				line = fmt.Sprintf("w.Int(\"%s\", m.%s)", f.ColumnName, f.Name)
+				if isInstant(f.GoType) {
+					line = fmt.Sprintf("w.Int(\"%s\", int64(m.%s))", f.ColumnName, f.Name)
+				} else {
+					line = fmt.Sprintf("w.Int(\"%s\", m.%s)", f.ColumnName, f.Name)
+				}
 			case model.FieldFloat:
 				line = fmt.Sprintf("w.Float(\"%s\", m.%s)", f.ColumnName, f.Name)
 			case model.FieldBool:
@@ -248,7 +266,11 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 			case model.FieldRaw:
 				buf.Write(fmt.Sprintf("\tif v, ok := r.Raw(\"%s\"); ok { m.%s = v }\n", f.ColumnName, f.Name))
 			case model.FieldInt:
-				buf.Write(fmt.Sprintf("\tif v, ok := r.Int(\"%s\"); ok { m.%s = v }\n", f.ColumnName, f.Name))
+				if isInstant(f.GoType) {
+					buf.Write(fmt.Sprintf("\tif v, ok := r.Int(\"%s\"); ok { m.%s = %s(v) }\n", f.ColumnName, f.Name, f.GoType))
+				} else {
+					buf.Write(fmt.Sprintf("\tif v, ok := r.Int(\"%s\"); ok { m.%s = v }\n", f.ColumnName, f.Name))
+				}
 			case model.FieldFloat:
 				buf.Write(fmt.Sprintf("\tif v, ok := r.Float(\"%s\"); ok { m.%s = v }\n", f.ColumnName, f.Name))
 			case model.FieldBool:
@@ -396,7 +418,7 @@ func (m *modelStub) Pointers() []any                  { return nil }
 func (m *modelStub) IsNil() bool                      { return m == nil }
 func (m *modelStub) EncodeFields(_ model.FieldWriter) {}
 func (m *modelStub) DecodeFields(_ model.FieldReader) {}
-func (m *modelStub) SchemaExt() []model.FieldExt       { return m.exts }
+func (m *modelStub) SchemaExt() []model.FieldExt      { return m.exts }
 
 func newModelStub(info StructInfo) *modelStub {
 	stub := &modelStub{name: info.ModelName}
@@ -453,7 +475,7 @@ func newModelStub(info StructInfo) *modelStub {
 func goTypeToFieldType(goType string) model.FieldType {
 	switch goType {
 	case "int", "int8", "int16", "int32", "int64",
-		"uint", "uint8", "uint16", "uint32", "uint64":
+		"uint", "uint8", "uint16", "uint32", "uint64", goTypeUnix, goTypeNano:
 		return model.FieldInt
 	case "float32", "float64":
 		return model.FieldFloat

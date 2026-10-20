@@ -71,4 +71,24 @@ func TestOrmc(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("Generate Instants With Their Type", func(t *testing.T) {
+		contentBytes, err := os.ReadFile("models_orm.go")
+		if err != nil {
+			t.Fatalf("Failed to read generated file: %v", err)
+		}
+		content := string(contentBytes)
+		for _, expected := range []string{
+			"\"webtyp.com/time\"",
+			"ExpiresAt time.Unix",
+			"UpdatedAt time.Nano",
+			"func (m *Session) Pointers() []any { return []any{&m.Id, (*int64)(&m.ExpiresAt), (*int64)(&m.UpdatedAt)} }",
+			"w.Int(\"expires_at\", int64(m.ExpiresAt))",
+			"m.UpdatedAt = time.Nano(v)",
+		} {
+			if !strings.Contains(content, expected) {
+				t.Errorf("Generated file missing expected string: %s", expected)
+			}
+		}
+	})
 }

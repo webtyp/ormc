@@ -18,7 +18,25 @@ var builtinKinds = map[string]model.FieldType{
 	"Struct":      model.FieldStruct,
 	"IntSlice":    model.FieldIntSlice,
 	"StructSlice": model.FieldStructSlice,
+	"UnixTime":    model.FieldInt,
+	"NanoTime":    model.FieldInt,
 }
+
+// instantGoTypes are the model kinds whose field is generated with a typed instant instead of int64: the unit lives in
+// the Go type, so assigning a nanosecond instant to a seconds field does not compile. Stored as integers like Int.
+var instantGoTypes = map[string]string{
+	"UnixTime": goTypeUnix,
+	"NanoTime": goTypeNano,
+}
+
+const (
+	goTypeUnix     = "time.Unix"
+	goTypeNano     = "time.Nano"
+	timeImportPath = "webtyp.com/time"
+)
+
+// isInstant reports whether a generated Go type is a typed instant of webtyp.com/time.
+func isInstant(goType string) bool { return goType == goTypeUnix || goType == goTypeNano }
 
 func (g *Generator) resolveStorage(infos []StructInfo, file *ast.File) error {
 	importMap := make(map[string]string) // alias -> path
@@ -109,6 +127,11 @@ func (g *Generator) resolveStorage(infos []StructInfo, file *ast.File) error {
 				}
 			}
 			fi.GoType = FieldTypeToGoType(fi.Type, fi.Ref)
+			if selector, constructor := parseConstructor(fi.KindConstructor); selector == "model" || importMap[selector] == "webtyp.com/model" {
+				if goType, ok := instantGoTypes[constructor]; ok {
+					fi.GoType = goType
+				}
+			}
 		}
 	}
 

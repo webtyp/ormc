@@ -129,3 +129,13 @@ var ShortAutoIncModel = model.Definition{
 		{Name: "value", Type: model.Int()},
 	},
 }
+
+// SessionModel holds instants with their unit: a deadline in seconds and an event in nanoseconds.
+var SessionModel = model.Definition{
+	Name: "session",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "expires_at", Type: model.UnixTime(), NotNull: true},
+		{Name: "updated_at", Type: model.NanoTime(), OmitEmpty: true},
+	},
+}

@@ -5,6 +5,7 @@ package tests
 import (
 	"webtyp.com/model"
 	"webtyp.com/orm"
+	"webtyp.com/time"
 )
 
 type User struct {
@@ -893,6 +894,72 @@ func ReadAllShortAutoInc(qb *orm.QB) (ShortAutoIncList, error) {
 	err := qb.ReadAll(
 		func() model.Model { return &ShortAutoInc{} },
 		func(m model.Model) { results = append(results, m.(*ShortAutoInc)) },
+	)
+	return results, err
+}
+
+type Session struct {
+	Id string
+	ExpiresAt time.Unix
+	UpdatedAt time.Nano
+}
+
+func (m *Session) ModelName() string { return "session" }
+
+func (m *Session) Schema() []model.Field { return SessionModel.Fields }
+
+func (m *Session) Pointers() []any { return []any{&m.Id, (*int64)(&m.ExpiresAt), (*int64)(&m.UpdatedAt)} }
+
+func (m *Session) IsNil() bool { return m == nil }
+
+func (m *Session) EncodeFields(w model.FieldWriter) {
+	w.String("id", m.Id)
+	w.Int("expires_at", int64(m.ExpiresAt))
+	if m.UpdatedAt != 0 { w.Int("updated_at", int64(m.UpdatedAt)) }
+}
+
+func (m *Session) DecodeFields(r model.FieldReader) {
+	if v, ok := r.String("id"); ok { m.Id = v }
+	if v, ok := r.Int("expires_at"); ok { m.ExpiresAt = time.Unix(v) }
+	if v, ok := r.Int("updated_at"); ok { m.UpdatedAt = time.Nano(v) }
+}
+
+type SessionList []*Session
+
+func (s *SessionList) Len() int             { return len(*s) }
+func (s *SessionList) At(i int) model.Fielder { return (*s)[i] }
+func (s *SessionList) Append() model.Fielder  { v := &Session{}; *s = append(*s, v); return v }
+func (s *SessionList) IsNil() bool          { return s == nil }
+func (s *SessionList) EncodeFields(_ model.FieldWriter) {}
+func (s *SessionList) DecodeFields(_ model.FieldReader) {}
+
+func (m *Session) Validate(action byte) error {
+	return model.ValidateFields(action, m)
+}
+
+var Session_ = struct {
+	Id string
+	ExpiresAt string
+	UpdatedAt string
+}{
+	Id: "id",
+	ExpiresAt: "expires_at",
+	UpdatedAt: "updated_at",
+}
+
+func ReadOneSession(qb *orm.QB, model *Session) (*Session, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllSession(qb *orm.QB) (SessionList, error) {
+	var results SessionList
+	err := qb.ReadAll(
+		func() model.Model { return &Session{} },
+		func(m model.Model) { results = append(results, m.(*Session)) },
 	)
 	return results, err
 }

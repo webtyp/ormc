@@ -70,6 +70,13 @@ DB schema. See [docs/SYNC_DESIGN.md](docs/SYNC_DESIGN.md) and
 [docs/diagrams/DB_SYNC.md](docs/diagrams/DB_SYNC.md) for the watcher/sync
 flow.
 
+## Instants
+
+`model.UnixTime()` and `model.NanoTime()` generate fields typed `time.Unix` and `time.Nano` (`webtyp.com/time`), imported
+automatically. They are stored as integers: `Pointers()` exposes them as `(*int64)(&m.Field)`, and the codec converts
+explicitly (`w.Int("x", int64(m.X))`, `m.X = time.Unix(v)`), so storage backends and codecs need no change while the
+compiler rejects a nanosecond instant in a seconds field.
+
 ## Documentation
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — what ormc is post-split,

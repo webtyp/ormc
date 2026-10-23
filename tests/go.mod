@@ -7,7 +7,7 @@ go 1.26.8
 
 require (
 	webtyp.com/json v0.5.31
-	webtyp.com/model v0.2.5
+	webtyp.com/model v0.2.6
 	webtyp.com/orm v0.12.8
 	webtyp.com/ormc v0.1.24
 	webtyp.com/time v0.6.2

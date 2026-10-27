@@ -3,6 +3,8 @@ PLAN: "feat: read Field.Row and Field.Options; reject an invalid list row at gen
 TAG: v0.1.25
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 14563173585899449152
 ---
 
 > Read AGENTS.md at the repo root before any change.

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"webtyp.com/model"
 )
 
 // writeTemp writes content to a temp file and returns its path.
@@ -494,5 +495,170 @@ var PingArgsModel = model.Definition{
 	}
 	if !strings.Contains(s, "return model.ValidateFields(action, m)") {
 		t.Errorf("incorrect Validate method body")
+	}
+}
+
+func TestParseDefinition_RowSlots(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var ItemModel = model.Definition{
+	Name: "item",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+		{Name: "sku", Type: model.Text(), Row: model.RowDetail},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	infos, err := g.parseDefinitionsInFile(tmpPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(infos) != 1 {
+		t.Fatalf("expected 1 info, got %d", len(infos))
+	}
+	fields := infos[0].Fields
+	if len(fields) != 3 {
+		t.Fatalf("expected 3 fields, got %d", len(fields))
+	}
+	if fields[1].Row != model.RowTitle {
+		t.Errorf("expected RowTitle, got %v", fields[1].Row)
+	}
+	if fields[2].Row != model.RowDetail {
+		t.Errorf("expected RowDetail, got %v", fields[2].Row)
+	}
+}
+
+func TestParseDefinition_Options(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var ZoneModel = model.Definition{
+	Name: "zone",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+	},
+}
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "zone_id", Type: model.Int(), Options: &ZoneModel},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	infos, err := g.parseDefinitionsInFile(tmpPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(infos) != 2 {
+		t.Fatalf("expected 2 infos, got %d", len(infos))
+	}
+	deviceFields := infos[1].Fields
+	if len(deviceFields) != 2 {
+		t.Fatalf("expected 2 fields in device, got %d", len(deviceFields))
+	}
+	if deviceFields[1].Options != "ZoneModel" {
+		t.Errorf("expected ZoneModel, got %q", deviceFields[1].Options)
+	}
+}
+
+func TestParseDefinition_TwoRowTitlesFails(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+		{Name: "sku", Type: model.Text(), Row: model.RowTitle},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	_, err := g.parseDefinitionsInFile(tmpPath)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "DeviceModel:") || !strings.Contains(err.Error(), "two fields marked RowTitle") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestParseDefinition_DetailWithoutTitleFails(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "sku", Type: model.Text(), Row: model.RowDetail},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	_, err := g.parseDefinitionsInFile(tmpPath)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "need a field marked RowTitle") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestParseDefinition_RefAndOptionsFails(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var ZoneModel = model.Definition{
+	Name: "zone",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+	},
+}
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "zone_id", Type: model.Int(), Ref: &ZoneModel, Options: &ZoneModel},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	_, err := g.parseDefinitionsInFile(tmpPath)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "both Ref and Options: zone_id") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestParseDefinition_UnknownRowSlotFails(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Row: model.RowFooter},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	_, err := g.parseDefinitionsInFile(tmpPath)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "unknown Row slot") {
+		t.Errorf("unexpected error message: %v", err)
 	}
 }

@@ -187,3 +187,6 @@ cd tests && GOPRIVATE=webtyp.com/*,github.com/veltylabs/* GOFLAGS=-mod=mod gotes
 | 2 | `parse_definition.go` | `model.ValidateRow` per Definition |
 | 3 | `generator_test.go` | 6 tests |
 | 4 | `README.md` | document |
+
+## Executor notes
+Everything completed successfully, no notes.

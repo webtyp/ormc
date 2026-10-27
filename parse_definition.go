@@ -101,6 +101,10 @@ func (g *Generator) parseDefinition(varName string, expr ast.Expr, file *ast.Fil
 		}
 	}
 
+	if err := validateRow(varName, info.Fields); err != nil {
+		return nil, err
+	}
+
 	if info.ModelName == "" {
 		info.ModelName = ToSnakeCase(info.Name)
 	}
@@ -178,6 +182,14 @@ func (g *Generator) parseField(cl *ast.CompositeLit) (FieldInfo, error) {
 			return FieldInfo{}, fmt.Err(fmt.Sprintf("field %s: Field.Widget was removed (Kind unification): declare the kind in Type — e.g. Type: input.Email()", fi.ColumnName))
 		case "DB":
 			g.parseDBField(kv.Value, &fi)
+		case "Row":
+			slot, ok := rowSlotOf(exprToString(kv.Value))
+			if !ok {
+				return FieldInfo{}, fmt.Err(fmt.Sprintf(errUnknownRowSlot, fi.ColumnName, exprToString(kv.Value)))
+			}
+			fi.Row = slot
+		case "Options":
+			fi.Options = parseRef(kv.Value)
 		case "Ref":
 			fi.Ref = parseRef(kv.Value)
 		case "Permitted":
@@ -294,6 +306,28 @@ func (g *Generator) parsePermitted(expr ast.Expr, fi *FieldInfo) {
 	}
 }
 
+const errUnknownRowSlot = "field %s: unknown Row slot %s (use model.RowTitle, model.RowDetail or model.RowBadge)"
+
+// rowSlotOf maps the selector written in a Definition (model.RowTitle, or RowTitle
+// with a dot-import) to its slot.
+func rowSlotOf(expr string) (model.RowSlot, bool) {
+	name := expr
+	if i := strings.LastIndex(expr, "."); i >= 0 {
+		name = expr[i+1:]
+	}
+	switch name {
+	case "RowTitle":
+		return model.RowTitle, true
+	case "RowDetail":
+		return model.RowDetail, true
+	case "RowBadge":
+		return model.RowBadge, true
+	case "RowNone":
+		return model.RowNone, true
+	}
+	return model.RowNone, false
+}
+
 func parseRef(expr ast.Expr) string {
 	s := exprToString(expr)
 	s = strings.TrimPrefix(s, "&")
@@ -406,4 +440,24 @@ func resolveStructType(ref string) string {
 		parts[len(parts)-1] = strings.TrimSuffix(last, "Model")
 	}
 	return strings.Join(parts, ".")
+}
+
+
+// validateRow hands model.ValidateRow the facts it reads (name, row slot, and
+// whether Ref/Options are set) and names the Definition in the error.
+func validateRow(varName string, fields []FieldInfo) error {
+	mf := make([]model.Field, len(fields))
+	for i, f := range fields {
+		mf[i] = model.Field{Name: f.ColumnName, Row: f.Row}
+		if f.Ref != "" && f.Type != model.FieldStruct && f.Type != model.FieldStructSlice {
+			mf[i].Ref = &model.Definition{Name: f.Ref}
+		}
+		if f.Options != "" {
+			mf[i].Options = &model.Definition{Name: f.Options}
+		}
+	}
+	if err := model.ValidateRow(mf); err != nil {
+		return fmt.Err(varName + ": " + err.Error())
+	}
+	return nil
 }

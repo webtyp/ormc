@@ -70,6 +70,10 @@ DB schema. See [docs/SYNC_DESIGN.md](docs/SYNC_DESIGN.md) and
 [docs/diagrams/DB_SYNC.md](docs/diagrams/DB_SYNC.md) for the watcher/sync
 flow.
 
+## List Rows
+
+`ormc` rejects an invalid list row when it generates (via `model.ValidateRow`) so empty list rows never reach the browser. `Row` and `Options` need no generated code since `Schema()` returns the handwritten Definition's fields directly to the runtime.
+
 ## Instants
 
 `model.UnixTime()` and `model.NanoTime()` generate fields typed `time.Unix` and `time.Nano` (`webtyp.com/time`), imported

@@ -1,0 +1,12 @@
+{
+  "languages": ["es", "zh", "hi", "ar", "pt", "fr", "de", "ru"],
+  "keys": {
+    "Struct not found in file": ["Estructura no encontrada en el archivo", "文件中未找到结构体", "फ़ाइल में संरचना नहीं मिली", "لم يتم العثور على الهيكل في الملف", "Estrutura não encontrada no arquivo", "Structure non trouvée dans le fichier", "Struktur in Datei nicht gefunden", "Структура не найдена в файле"],
+    "error walking directory": ["error al recorrer el directorio", "遍历目录时出错", "निर्देशिका में जाते समय त्रुटि", "خطأ في استعراض الدليل", "erro ao percorrer o diretório", "erreur lors du parcours du répertoire", "Fehler beim Durchlaufen des Verzeichnisses", "ошибка при обходе каталога"],
+    "failed to tidy module": ["falló al limpiar el módulo", "整理模块失败", "मॉड्यूल को व्यवस्थित करने में विफल", "فشل في ترتيب الوحدة", "falha ao organizar o módulo", "échec du nettoyage du module", "Bereinigen des Moduls fehlgeschlagen", "не удалось очистить модуль"],
+    "found": ["encontrado", "找到", "मिला", "تم العثور على", "encontrado", "trouvé", "gefunden", "найдено"],
+    "models": ["modelos", "模型", "मॉडल", "نماذج", "modelos", "modèles", "Modelle", "модели"],
+    "no": ["ningún", "没有", "कोई नहीं", "لا يوجد", "nenhum", "aucun", "kein", "нет"],
+    "no models found": ["no se encontraron modelos", "未找到模型", "कोई मॉडल नहीं मिला", "لم يتم العثور على نماذج", "nenhum modelo encontrado", "aucun modèle trouvé", "keine Modelle gefunden", "модели не найдены"]
+  }
+}

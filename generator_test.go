@@ -498,15 +498,15 @@ var PingArgsModel = model.Definition{
 	}
 }
 
-func TestParseDefinition_RowSlots(t *testing.T) {
+func TestParseDefinition_ItemSlots(t *testing.T) {
 	src := `package p
 import "webtyp.com/model"
 var ItemModel = model.Definition{
 	Name: "item",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
-		{Name: "name", Type: model.Text(), Row: model.RowTitle},
-		{Name: "sku", Type: model.Text(), Row: model.RowDetail},
+		{Name: "name", Type: model.Text(), Item: model.ItemLabel},
+		{Name: "sku", Type: model.Text(), Item: model.ItemDescription},
 	},
 }
 `
@@ -523,11 +523,11 @@ var ItemModel = model.Definition{
 	if len(fields) != 3 {
 		t.Fatalf("expected 3 fields, got %d", len(fields))
 	}
-	if fields[1].Row != model.RowTitle {
-		t.Errorf("expected RowTitle, got %v", fields[1].Row)
+	if fields[1].Item != model.ItemLabel {
+		t.Errorf("expected ItemLabel, got %v", fields[1].Item)
 	}
-	if fields[2].Row != model.RowDetail {
-		t.Errorf("expected RowDetail, got %v", fields[2].Row)
+	if fields[2].Item != model.ItemDescription {
+		t.Errorf("expected ItemDescription, got %v", fields[2].Item)
 	}
 }
 
@@ -538,7 +538,7 @@ var ZoneModel = model.Definition{
 	Name: "zone",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
-		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+		{Name: "name", Type: model.Text(), Item: model.ItemLabel},
 	},
 }
 var DeviceModel = model.Definition{
@@ -567,15 +567,15 @@ var DeviceModel = model.Definition{
 	}
 }
 
-func TestParseDefinition_TwoRowTitlesFails(t *testing.T) {
+func TestParseDefinition_TwoItemLabelsFails(t *testing.T) {
 	src := `package p
 import "webtyp.com/model"
 var DeviceModel = model.Definition{
 	Name: "device",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
-		{Name: "name", Type: model.Text(), Row: model.RowTitle},
-		{Name: "sku", Type: model.Text(), Row: model.RowTitle},
+		{Name: "name", Type: model.Text(), Item: model.ItemLabel},
+		{Name: "sku", Type: model.Text(), Item: model.ItemLabel},
 	},
 }
 `
@@ -585,19 +585,19 @@ var DeviceModel = model.Definition{
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "DeviceModel:") || !strings.Contains(err.Error(), "two fields marked RowTitle") {
+	if !strings.Contains(err.Error(), "DeviceModel:") || !strings.Contains(err.Error(), "two fields marked ItemLabel") {
 		t.Errorf("unexpected error message: %v", err)
 	}
 }
 
-func TestParseDefinition_DetailWithoutTitleFails(t *testing.T) {
+func TestParseDefinition_DescriptionWithoutLabelFails(t *testing.T) {
 	src := `package p
 import "webtyp.com/model"
 var DeviceModel = model.Definition{
 	Name: "device",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
-		{Name: "sku", Type: model.Text(), Row: model.RowDetail},
+		{Name: "sku", Type: model.Text(), Item: model.ItemDescription},
 	},
 }
 `
@@ -607,7 +607,7 @@ var DeviceModel = model.Definition{
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "need a field marked RowTitle") {
+	if !strings.Contains(err.Error(), "need a field marked ItemLabel") {
 		t.Errorf("unexpected error message: %v", err)
 	}
 }
@@ -619,7 +619,7 @@ var ZoneModel = model.Definition{
 	Name: "zone",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
-		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+		{Name: "name", Type: model.Text(), Item: model.ItemLabel},
 	},
 }
 var DeviceModel = model.Definition{
@@ -641,14 +641,14 @@ var DeviceModel = model.Definition{
 	}
 }
 
-func TestParseDefinition_UnknownRowSlotFails(t *testing.T) {
+func TestParseDefinition_UnknownItemSlotFails(t *testing.T) {
 	src := `package p
 import "webtyp.com/model"
 var DeviceModel = model.Definition{
 	Name: "device",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
-		{Name: "name", Type: model.Text(), Row: model.RowFooter},
+		{Name: "name", Type: model.Text(), Item: model.ItemFooter},
 	},
 }
 `
@@ -658,7 +658,191 @@ var DeviceModel = model.Definition{
 	if err == nil {
 		t.Fatal("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "unknown Row slot") {
+	if !strings.Contains(err.Error(), "unknown Item slot") {
 		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestParseDefinition_RowKeyRejected(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Int(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Row: model.RowTitle},
+	},
+}
+`
+	g := New()
+	tmpPath := writeTemp(t, src)
+	_, err := g.parseDefinitionsInFile(tmpPath)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "Field.Row was replaced by Field.Item") {
+		t.Errorf("unexpected error message: %v", err)
+	}
+}
+
+func TestGenerate_ItemMethod(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var PlanItemModel = model.Definition{
+	Name: "plan_item",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "object", Type: model.Text(), Item: model.ItemLabel},
+		{Name: "before", Type: model.Text(), Item: model.ItemDescription},
+		{Name: "after", Type: model.Text(), Item: model.ItemDescription},
+		{Name: "reason", Type: model.Text(), Item: model.ItemDescription},
+	},
+}
+`
+	tmpFile := writeTemp(t, src)
+	g := New()
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, tmpFile, nil, parser.ParseComments)
+	infos, err := g.parseDefinitionsInFile(tmpFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.resolveStorage(infos, node); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.GenerateForFile(infos, tmpFile); err != nil {
+		t.Fatal(err)
+	}
+	genFile := strings.TrimSuffix(tmpFile, ".go") + "_orm.go"
+	content, err := os.ReadFile(genFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(content)
+	if !strings.Contains(s, "func (m *PlanItem) Item() model.Item {") {
+		t.Errorf("missing Item() method in generated output")
+	}
+	if !strings.Contains(s, "model.JoinItem(m.Before, m.After, m.Reason)") {
+		t.Errorf("missing model.JoinItem in generated output:\n%s", s)
+	}
+	_, err = parser.ParseFile(fset, genFile, nil, parser.AllErrors)
+	if err != nil {
+		t.Errorf("generated file does not parse: %v", err)
+	}
+}
+
+func TestGenerate_ItemOneDescriptionNoJoin(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var ItemModel = model.Definition{
+	Name: "item",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text(), Item: model.ItemLabel},
+		{Name: "sku", Type: model.Text(), Item: model.ItemDescription},
+	},
+}
+`
+	tmpFile := writeTemp(t, src)
+	g := New()
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, tmpFile, nil, parser.ParseComments)
+	infos, err := g.parseDefinitionsInFile(tmpFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.resolveStorage(infos, node); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.GenerateForFile(infos, tmpFile); err != nil {
+		t.Fatal(err)
+	}
+	genFile := strings.TrimSuffix(tmpFile, ".go") + "_orm.go"
+	content, err := os.ReadFile(genFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(content)
+	if !strings.Contains(s, "Description: m.Sku") {
+		t.Errorf("expected Description: m.Sku, got:\n%s", s)
+	}
+	if strings.Contains(s, "JoinItem") {
+		t.Errorf("JoinItem should not be used for single description:\n%s", s)
+	}
+}
+
+func TestGenerate_ItemDateBadgeIsSeconds(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var EventModel = model.Definition{
+	Name: "event",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "title", Type: model.Text(), Item: model.ItemLabel},
+		{Name: "at", Type: model.NanoTime(), Item: model.ItemBadge},
+	},
+}
+`
+	tmpFile := writeTemp(t, src)
+	g := New()
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, tmpFile, nil, parser.ParseComments)
+	infos, err := g.parseDefinitionsInFile(tmpFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.resolveStorage(infos, node); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.GenerateForFile(infos, tmpFile); err != nil {
+		t.Fatal(err)
+	}
+	genFile := strings.TrimSuffix(tmpFile, ".go") + "_orm.go"
+	content, err := os.ReadFile(genFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(content)
+	if !strings.Contains(s, "Badge: fmt.Convert(int64(m.At)/1000000000).String()") {
+		t.Errorf("expected date badge in seconds, got:\n%s", s)
+	}
+	if !strings.Contains(s, "\"webtyp.com/fmt\"") {
+		t.Errorf("missing webtyp.com/fmt import in generated output:\n%s", s)
+	}
+}
+
+func TestGenerate_NoMarksNoItem(t *testing.T) {
+	src := `package p
+import "webtyp.com/model"
+var UserModel = model.Definition{
+	Name: "user",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "name", Type: model.Text()},
+	},
+}
+`
+	tmpFile := writeTemp(t, src)
+	g := New()
+	fset := token.NewFileSet()
+	node, _ := parser.ParseFile(fset, tmpFile, nil, parser.ParseComments)
+	infos, err := g.parseDefinitionsInFile(tmpFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := g.resolveStorage(infos, node); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.GenerateForFile(infos, tmpFile); err != nil {
+		t.Fatal(err)
+	}
+	genFile := strings.TrimSuffix(tmpFile, ".go") + "_orm.go"
+	content, err := os.ReadFile(genFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(content)
+	if strings.Contains(s, "Item()") {
+		t.Errorf("expected no Item() method when no marks, got:\n%s", s)
 	}
 }

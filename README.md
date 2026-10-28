@@ -70,9 +70,16 @@ DB schema. See [docs/SYNC_DESIGN.md](docs/SYNC_DESIGN.md) and
 [docs/diagrams/DB_SYNC.md](docs/diagrams/DB_SYNC.md) for the watcher/sync
 flow.
 
-## List Rows
+## List Items
 
-`ormc` rejects an invalid list row when it generates (via `model.ValidateRow`) so empty list rows never reach the browser. `Row` and `Options` need no generated code since `Schema()` returns the handwritten Definition's fields directly to the runtime.
+`ormc` generates a typed `func (m *X) Item() model.Item` for every model with at least one field marked `Item:` (`model.ItemLabel`, `model.ItemDescription`, `model.ItemBadge`). Multiple description fields are joined with `model.JoinItem`. A date field marked `ItemBadge` is rendered as seconds since 1970 (`fmt.Convert(int64(m.At)/1000000000).String()`).
+
+Invalid item declarations are rejected at generation time via `model.ValidateItem`:
+- At most one `ItemLabel` and at most one `ItemBadge`.
+- Any `ItemDescription` or `ItemBadge` requires an `ItemLabel`.
+- Listed models require a primary key.
+- Only scalar fields can be shown in a list item.
+- `Row:` was replaced by `Item:`; legacy `Row:` marks are rejected.
 
 ## Instants
 

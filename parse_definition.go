@@ -101,7 +101,7 @@ func (g *Generator) parseDefinition(varName string, expr ast.Expr, file *ast.Fil
 		}
 	}
 
-	if err := validateRow(varName, info.Fields); err != nil {
+	if err := validateItem(varName, info.Fields); err != nil {
 		return nil, err
 	}
 
@@ -182,12 +182,14 @@ func (g *Generator) parseField(cl *ast.CompositeLit) (FieldInfo, error) {
 			return FieldInfo{}, fmt.Err(fmt.Sprintf("field %s: Field.Widget was removed (Kind unification): declare the kind in Type — e.g. Type: input.Email()", fi.ColumnName))
 		case "DB":
 			g.parseDBField(kv.Value, &fi)
-		case "Row":
-			slot, ok := rowSlotOf(exprToString(kv.Value))
+		case "Item":
+			slot, ok := itemSlotOf(exprToString(kv.Value))
 			if !ok {
-				return FieldInfo{}, fmt.Err(fmt.Sprintf(errUnknownRowSlot, fi.ColumnName, exprToString(kv.Value)))
+				return FieldInfo{}, fmt.Err(fmt.Sprintf(errUnknownItemSlot, fi.ColumnName, exprToString(kv.Value)))
 			}
-			fi.Row = slot
+			fi.Item = slot
+		case "Row":
+			return FieldInfo{}, fmt.Err(fmt.Sprintf("field %s: Field.Row was replaced by Field.Item (model.ItemLabel, model.ItemDescription, model.ItemBadge)", fi.ColumnName))
 		case "Options":
 			fi.Options = parseRef(kv.Value)
 		case "Ref":
@@ -306,26 +308,26 @@ func (g *Generator) parsePermitted(expr ast.Expr, fi *FieldInfo) {
 	}
 }
 
-const errUnknownRowSlot = "field %s: unknown Row slot %s (use model.RowTitle, model.RowDetail or model.RowBadge)"
+const errUnknownItemSlot = "field %s: unknown Item slot %s (use model.ItemLabel, model.ItemDescription or model.ItemBadge)"
 
-// rowSlotOf maps the selector written in a Definition (model.RowTitle, or RowTitle
+// itemSlotOf maps the selector written in a Definition (model.ItemLabel, or ItemLabel
 // with a dot-import) to its slot.
-func rowSlotOf(expr string) (model.RowSlot, bool) {
+func itemSlotOf(expr string) (model.ItemSlot, bool) {
 	name := expr
 	if i := strings.LastIndex(expr, "."); i >= 0 {
 		name = expr[i+1:]
 	}
 	switch name {
-	case "RowTitle":
-		return model.RowTitle, true
-	case "RowDetail":
-		return model.RowDetail, true
-	case "RowBadge":
-		return model.RowBadge, true
-	case "RowNone":
-		return model.RowNone, true
+	case "ItemLabel":
+		return model.ItemLabel, true
+	case "ItemDescription":
+		return model.ItemDescription, true
+	case "ItemBadge":
+		return model.ItemBadge, true
+	case "ItemNone":
+		return model.ItemNone, true
 	}
-	return model.RowNone, false
+	return model.ItemNone, false
 }
 
 func parseRef(expr ast.Expr) string {
@@ -443,12 +445,16 @@ func resolveStructType(ref string) string {
 }
 
 
-// validateRow hands model.ValidateRow the facts it reads (name, row slot, and
-// whether Ref/Options are set) and names the Definition in the error.
-func validateRow(varName string, fields []FieldInfo) error {
+// validateItem hands model.ValidateItem the facts it reads (name, item slot, PK,
+// and whether Ref/Options are set) and names the Definition in the error.
+func validateItem(varName string, fields []FieldInfo) error {
 	mf := make([]model.Field, len(fields))
 	for i, f := range fields {
-		mf[i] = model.Field{Name: f.ColumnName, Row: f.Row}
+		var db *model.FieldDB
+		if f.PK {
+			db = &model.FieldDB{PK: true}
+		}
+		mf[i] = model.Field{Name: f.ColumnName, Item: f.Item, DB: db}
 		if f.Ref != "" && f.Type != model.FieldStruct && f.Type != model.FieldStructSlice {
 			mf[i].Ref = &model.Definition{Name: f.Ref}
 		}
@@ -456,7 +462,7 @@ func validateRow(varName string, fields []FieldInfo) error {
 			mf[i].Options = &model.Definition{Name: f.Options}
 		}
 	}
-	if err := model.ValidateRow(mf); err != nil {
+	if err := model.ValidateItem(mf); err != nil {
 		return fmt.Err(varName + ": " + err.Error())
 	}
 	return nil

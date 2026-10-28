@@ -127,6 +127,12 @@ func (g *Generator) resolveStorage(infos []StructInfo, file *ast.File) error {
 				}
 			}
 			fi.GoType = FieldTypeToGoType(fi.Type, fi.Ref)
+			if fi.Item != model.ItemNone {
+				switch fi.Type {
+				case model.FieldStruct, model.FieldStructSlice, model.FieldBlob, model.FieldIntSlice:
+					return fmt.Err(fmt.Sprintf("field %s: only scalar fields can be shown in a list item", fi.ColumnName))
+				}
+			}
 			if selector, constructor := parseConstructor(fi.KindConstructor); selector == "model" || importMap[selector] == "webtyp.com/model" {
 				if goType, ok := instantGoTypes[constructor]; ok {
 					fi.GoType = goType

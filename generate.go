@@ -27,6 +27,16 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 	if len(infos) == 0 {
 		return nil
 	}
+	for _, info := range infos {
+		for _, f := range info.Fields {
+			if f.Item != model.ItemNone {
+				switch f.Type {
+				case model.FieldStruct, model.FieldStructSlice, model.FieldBlob, model.FieldIntSlice:
+					return fmt.Err(fmt.Sprintf("field %s: only scalar fields can be shown in a list item", f.ColumnName))
+				}
+			}
+		}
+	}
 	buf := fmt.Convert()
 
 	// File Header
@@ -68,6 +78,20 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 		for _, f := range info.Fields {
 			if isInstant(f.GoType) {
 				kindImports[timeImportPath] = ""
+			}
+		}
+		hasItemLabel := false
+		for _, f := range info.Fields {
+			if f.Item == model.ItemLabel {
+				hasItemLabel = true
+				break
+			}
+		}
+		if hasItemLabel {
+			for _, f := range info.Fields {
+				if (f.Item != model.ItemNone || f.PK) && f.GoType != "string" {
+					kindImports["webtyp.com/fmt"] = ""
+				}
 			}
 		}
 	}
@@ -339,6 +363,8 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 		buf.Write("\treturn model.ValidateFields(action, m)\n")
 		buf.Write("}\n\n")
 
+		writeItem(buf, info)
+
 		if !info.NoDB {
 			// Metadata Descriptors
 			buf.Write(fmt.Sprintf("var %s_ = struct {\n", info.Name))
@@ -514,4 +540,52 @@ func (g *Generator) ExportSQL(root string, exporter Exporter) (string, error) {
 		return "", ErrNoModelsFound
 	}
 	return exporter.ExportDDL(models)
+}
+
+// itemExpr is the Go expression turning field f of m into text for model.Item.
+// A date field becomes seconds since 1970 (what the date/hour widgets read).
+func itemExpr(f FieldInfo) string {
+	switch {
+	case f.GoType == "string":
+		return "m." + f.Name
+	case f.GoType == goTypeNano:
+		return "fmt.Convert(int64(m." + f.Name + ")/1000000000).String()"
+	case f.GoType == goTypeUnix:
+		return "fmt.Convert(int64(m." + f.Name + ")).String()"
+	default:
+		return "fmt.Convert(m." + f.Name + ").String()"
+	}
+}
+
+func writeItem(buf *fmt.Conv, info StructInfo) {
+	var id, label, badge string
+	var desc []string
+	for _, f := range info.Fields {
+		if f.PK && id == "" {
+			id = itemExpr(f)
+		}
+		switch f.Item {
+		case model.ItemLabel:
+			label = itemExpr(f)
+		case model.ItemDescription:
+			desc = append(desc, itemExpr(f))
+		case model.ItemBadge:
+			badge = itemExpr(f)
+		}
+	}
+	if label == "" {
+		return // not a listed model: no Item()
+	}
+	parts := []string{"ID: " + id, "Label: " + label}
+	switch len(desc) {
+	case 0:
+	case 1:
+		parts = append(parts, "Description: "+desc[0])
+	default:
+		parts = append(parts, "Description: model.JoinItem("+strings.Join(desc, ", ")+")")
+	}
+	if badge != "" {
+		parts = append(parts, "Badge: "+badge)
+	}
+	buf.Write(fmt.Sprintf("func (m *%s) Item() model.Item {\n\treturn model.Item{%s}\n}\n\n", info.Name, strings.Join(parts, ", ")))
 }

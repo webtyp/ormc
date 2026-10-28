@@ -40,7 +40,7 @@ type FieldInfo struct {
 	Ref             string
 	RefColumn       string
 	OnDelete        string
-	Row             model.RowSlot // list-row slot from Field.Row; RowNone when absent
+	Item            model.ItemSlot // list-item slot from Field.Item; ItemNone when absent
 	Options         string        // Definition var name from Field.Options (e.g. "ZoneModel"); "" when absent
 	IsPK            bool
 	OldName         string

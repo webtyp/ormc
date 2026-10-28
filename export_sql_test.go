@@ -43,3 +43,36 @@ func TestExportSQL_NoModels_ReturnsErrNoModelsFound(t *testing.T) {
 		t.Error("ExportDDL should not be called when there are no models")
 	}
 }
+
+func TestModels_SameOrderEveryTimeAndKeepsForeignKeys(t *testing.T) {
+	first, err := New().Models("tests")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, _ := New().Models("tests")
+	if len(first) == 0 || len(first) != len(second) {
+		t.Fatalf("len = %d and %d, want equal and > 0", len(first), len(second))
+	}
+	for i := range first {
+		if first[i].ModelName() != second[i].ModelName() {
+			t.Fatalf("order differs at %d: %s vs %s", i, first[i].ModelName(), second[i].ModelName())
+		}
+	}
+	for _, m := range first {
+		if m.ModelName() != "order" {
+			continue
+		}
+		ext := m.(interface{ SchemaExt() []model.FieldExt }).SchemaExt()
+		if len(ext) != 1 || ext[0].Ref != "user" {
+			t.Fatalf("order SchemaExt = %+v, want one FK to user", ext)
+		}
+		return
+	}
+	t.Fatal("model order not found in tests/")
+}
+
+func TestModels_NoModels_ReturnsErrNoModelsFound(t *testing.T) {
+	if _, err := New().Models(t.TempDir()); !errors.Is(err, ErrNoModelsFound) {
+		t.Fatalf("err = %v, want ErrNoModelsFound", err)
+	}
+}

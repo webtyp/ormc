@@ -418,7 +418,7 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 					}
 					if f.Ref != "" && f.Type != model.FieldStruct && f.Type != model.FieldStructSlice {
 						// Resolve Ref name from Definition variable name
-						refName := ToSnakeCase(strings.TrimSuffix(strings.TrimPrefix(f.Ref, "&"), "Model"))
+						refName := refTableName(f.Ref)
 						buf.Write(fmt.Sprintf("\t\t{Field: %s[%d], Ref: \"%s\", RefColumn: \"%s\", OnDelete: \"%s\"},\n", schemaVar, j, refName, f.RefColumn, f.OnDelete))
 					}
 					j++
@@ -430,6 +430,12 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 
 	outName := fmt.Convert(sourceFile).TrimSuffix(".go").String() + "_orm.go"
 	return os.WriteFile(outName, buf.Bytes(), 0644)
+}
+
+// refTableName is the table a foreign key points at, from the Definition variable the model names in Ref:
+// "&UserModel" → "user". The generated SchemaExt and the stubs Models returns must agree, so both call it.
+func refTableName(ref string) string {
+	return ToSnakeCase(strings.TrimSuffix(strings.TrimPrefix(ref, "&"), "Model"))
 }
 
 type modelStub struct {
@@ -487,9 +493,10 @@ func newModelStub(info StructInfo) *modelStub {
 		}
 		stub.schema = append(stub.schema, field)
 		if f.Ref != "" {
+			refName := refTableName(f.Ref)
 			stub.exts = append(stub.exts, model.FieldExt{
 				Field:     field,
-				Ref:       f.Ref,
+				Ref:       refName,
 				RefColumn: f.RefColumn,
 				OnDelete:  f.OnDelete,
 			})
@@ -521,23 +528,36 @@ type Exporter interface {
 	ExportDDL(models []model.Model) (string, error)
 }
 
-// ExportSQL scans the directory for models and returns the full DDL.
-// Requires an injected Exporter (e.g. from sqlt or postgres).
-func (g *Generator) ExportSQL(root string, exporter Exporter) (string, error) {
+// Models scans root for model.go/models.go and returns one model.Model per database struct
+// (NoDB structs skipped), in the order the files and declarations were read — the same root
+// always gives the same order. A model's foreign keys are in its SchemaExt(). It returns
+// ErrNoModelsFound when there is none.
+func (g *Generator) Models(root string) ([]model.Model, error) {
 	g.rootDir = root
-	all, _, _, err := g.collectAllStructs()
+	all, order, _, err := g.collectAllStructs()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	var models []model.Model
-	for _, info := range all {
+	for _, name := range order {
+		info := all[name]
 		if info.NoDB {
 			continue
 		}
 		models = append(models, newModelStub(info))
 	}
 	if len(models) == 0 {
-		return "", ErrNoModelsFound
+		return nil, ErrNoModelsFound
+	}
+	return models, nil
+}
+
+// ExportSQL scans the directory for models and returns the full DDL.
+// Requires an injected Exporter (e.g. from sqlt or postgres).
+func (g *Generator) ExportSQL(root string, exporter Exporter) (string, error) {
+	models, err := g.Models(root)
+	if err != nil {
+		return "", err
 	}
 	return exporter.ExportDDL(models)
 }

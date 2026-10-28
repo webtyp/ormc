@@ -3,6 +3,8 @@ PLAN: "feat: Models(root) — the scanned models, in file order"
 TAG: v0.1.27
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 12065715035981192446
 ---
 
 > Read AGENTS.md at the repo root before any change.

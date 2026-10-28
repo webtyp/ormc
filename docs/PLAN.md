@@ -3,8 +3,10 @@ PLAN: "feat: Models(root) — the scanned models, in file order"
 TAG: v0.1.27
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 12065715035981192446
+PR: https://github.com/webtyp/ormc/pull/4
+REVIEWED_COMMIT: e8e772e8bbbd55d9a7af1f8f65428d0ca5fa9fbc
 ---
 
 > Read AGENTS.md at the repo root before any change.

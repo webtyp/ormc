@@ -70,6 +70,10 @@ DB schema. See [docs/SYNC_DESIGN.md](docs/SYNC_DESIGN.md) and
 [docs/diagrams/DB_SYNC.md](docs/diagrams/DB_SYNC.md) for the watcher/sync
 flow.
 
+## API
+
+`Models(root) ([]model.Model, error)` — the database models of root in file order, foreign keys in `SchemaExt()`; `ErrNoModelsFound` when none. Used by `webtyp/erd`.
+
 ## List Items
 
 `ormc` generates a typed `func (m *X) Item() model.Item` for every model with at least one field marked `Item:` (`model.ItemLabel`, `model.ItemDescription`, `model.ItemBadge`). Multiple description fields are joined with `model.JoinItem`. A date field marked `ItemBadge` is rendered as seconds since 1970 (`fmt.Convert(int64(m.At)/1000000000).String()`).

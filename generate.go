@@ -418,7 +418,7 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 					}
 					if f.Ref != "" && f.Type != model.FieldStruct && f.Type != model.FieldStructSlice {
 						// Resolve Ref name from Definition variable name
-						refName := ToSnakeCase(strings.TrimSuffix(strings.TrimPrefix(f.Ref, "&"), "Model"))
+						refName := refTableName(f.Ref)
 						buf.Write(fmt.Sprintf("\t\t{Field: %s[%d], Ref: \"%s\", RefColumn: \"%s\", OnDelete: \"%s\"},\n", schemaVar, j, refName, f.RefColumn, f.OnDelete))
 					}
 					j++
@@ -430,6 +430,12 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 
 	outName := fmt.Convert(sourceFile).TrimSuffix(".go").String() + "_orm.go"
 	return os.WriteFile(outName, buf.Bytes(), 0644)
+}
+
+// refTableName is the table a foreign key points at, from the Definition variable the model names in Ref:
+// "&UserModel" → "user". The generated SchemaExt and the stubs Models returns must agree, so both call it.
+func refTableName(ref string) string {
+	return ToSnakeCase(strings.TrimSuffix(strings.TrimPrefix(ref, "&"), "Model"))
 }
 
 type modelStub struct {
@@ -487,7 +493,7 @@ func newModelStub(info StructInfo) *modelStub {
 		}
 		stub.schema = append(stub.schema, field)
 		if f.Ref != "" {
-			refName := ToSnakeCase(strings.TrimSuffix(strings.TrimPrefix(f.Ref, "&"), "Model"))
+			refName := refTableName(f.Ref)
 			stub.exts = append(stub.exts, model.FieldExt{
 				Field:     field,
 				Ref:       refName,

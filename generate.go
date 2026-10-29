@@ -231,7 +231,7 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 				if f.OmitEmpty {
 					buf.Write(fmt.Sprintf("\tif len(m.%s) != 0 {\n", f.Name))
 				}
-				buf.Write(fmt.Sprintf("\t\t{\n\t\t\tarr := w.Array(\"%s\", len(m.%s))\n\t\t\tfor _, x := range m.%s {\n\t\t\t\tarr.Int(int64(x))\n\t\t\t}\n\t\t\tarr.Close()\n\t\t}\n", f.ColumnName, f.Name, f.Name))
+				buf.Write(fmt.Sprintf("\t\t{\n\t\t\tarr := w.Array(\"%s\", len(m.%s))\n\t\t\tfor _, x := range m.%s {\n\t\t\t\tarr.Int(int64(x))\n\t\t\t}\n\t\t}\n", f.ColumnName, f.Name, f.Name))
 				if f.OmitEmpty {
 					buf.Write("\t}\n")
 				}
@@ -246,7 +246,7 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 				} else {
 					buf.Write("\t\t\t\tarr.Object(&x)\n")
 				}
-				buf.Write("\t\t\t}\n\t\t\tarr.Close()\n\t\t}\n")
+				buf.Write("\t\t\t}\n\t\t}\n")
 				if f.OmitEmpty {
 					buf.Write("\t}\n")
 				}

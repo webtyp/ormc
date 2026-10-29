@@ -2,6 +2,8 @@ package ormc
 
 import (
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"webtyp.com/model"
@@ -75,4 +77,54 @@ func TestModels_NoModels_ReturnsErrNoModelsFound(t *testing.T) {
 	if _, err := New().Models(t.TempDir()); !errors.Is(err, ErrNoModelsFound) {
 		t.Fatalf("err = %v, want ErrNoModelsFound", err)
 	}
+}
+
+// A model read from source keeps what a diagram draws: the table a select's Options
+// comes from, and an instant's unit — not just its storage type.
+func TestModels_KeepsOptionsAndInstantKinds(t *testing.T) {
+	dir := t.TempDir()
+	src := `package devices
+
+import "webtyp.com/model"
+
+var ZoneModel = model.Definition{
+	Name: "zone",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+	},
+}
+
+var DeviceModel = model.Definition{
+	Name: "device",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "zone_id", Type: model.Text(), Options: &ZoneModel},
+		{Name: "expires_at", Type: model.UnixTime()},
+		{Name: "updated_at", Type: model.NanoTime()},
+	},
+}
+`
+	if err := os.WriteFile(filepath.Join(dir, "models.go"), []byte(src), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	models, err := New().Models(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range models {
+		if m.ModelName() != "device" {
+			continue
+		}
+		want := map[string]string{"expires_at": model.UnixTime().Name(), "updated_at": model.NanoTime().Name()}
+		for _, f := range m.Schema() {
+			if f.Name == "zone_id" && (f.Options == nil || f.Options.Name != "zone") {
+				t.Errorf("zone_id Options = %+v, want the zone table", f.Options)
+			}
+			if k, ok := want[f.Name]; ok && f.Type.Name() != k {
+				t.Errorf("%s kind = %q, want %q", f.Name, f.Type.Name(), k)
+			}
+		}
+		return
+	}
+	t.Fatal("model device not found")
 }

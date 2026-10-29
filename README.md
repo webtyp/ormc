@@ -72,7 +72,7 @@ flow.
 
 ## API
 
-`Models(root) ([]model.Model, error)` — the database models of root in file order, foreign keys in `SchemaExt()`; `ErrNoModelsFound` when none. Used by `webtyp/erd`.
+`Models(root) ([]model.Model, error)` — the database models of root in file order: foreign keys in `SchemaExt()`, a select's `Options` table, and an instant's kind (`UnixTime`, `NanoTime`), not just its storage; `ErrNoModelsFound` when none. Used by `webtyp/erd`.
 
 ## List Items
 

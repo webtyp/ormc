@@ -458,7 +458,15 @@ func newModelStub(info StructInfo) *modelStub {
 		var kind model.Kind
 		switch goTypeToFieldType(f.GoType) {
 		case model.FieldInt:
-			kind = model.Int()
+			// An instant keeps its unit: a diagram must tell seconds from nanoseconds.
+			switch f.GoType {
+			case goTypeUnix:
+				kind = model.UnixTime()
+			case goTypeNano:
+				kind = model.NanoTime()
+			default:
+				kind = model.Int()
+			}
 		case model.FieldFloat:
 			kind = model.Float()
 		case model.FieldBool:
@@ -481,6 +489,9 @@ func newModelStub(info StructInfo) *modelStub {
 			Name:    f.ColumnName,
 			Type:    kind,
 			NotNull: f.NotNull,
+		}
+		if f.Options != "" {
+			field.Options = &model.Definition{Name: refTableName(f.Options)}
 		}
 		if f.PK || f.Unique || f.AutoInc {
 			field.DB = &model.FieldDB{PK: f.PK, Unique: f.Unique, AutoInc: f.AutoInc}

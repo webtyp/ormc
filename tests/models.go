@@ -2,6 +2,7 @@ package tests
 
 import (
 	"webtyp.com/model"
+	"webtyp.com/ormc/tests/fixtureuse"
 )
 
 var UserModel = model.Definition{
@@ -66,6 +67,16 @@ var RefNoColumnModel = model.Definition{
 	Fields: model.Fields{
 		{Name: "id_ref", Type: model.Text(), DB: &model.FieldDB{PK: true}},
 		{Name: "parent_id", Type: model.Int(), Ref: &MultiAModel},
+	},
+}
+
+// ForeignRefModel points at a table of another package: the foreign key must
+// name that table ("fixture"), not the Go package that declares it.
+var ForeignRefModel = model.Definition{
+	Name: "foreign_ref",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "fixture_id", Type: model.Text(), Ref: &fixtureuse.FixtureModel, DB: &model.FieldDB{RefColumn: "id"}},
 	},
 }
 

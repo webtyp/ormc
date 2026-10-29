@@ -1,6 +1,16 @@
+webtyp.com/calendar v0.1.0 h1:lI0i74Ghee+fnYDx2P6XFJQKLyJKTeQbg4eT9IK8980=
+webtyp.com/calendar v0.1.0/go.mod h1:lHsVxVDpLBAGKovlPew9d5c0YiMoNQxfUHG8OfXDhHk=
 webtyp.com/fmt v1.0.0 h1:W0vMMGC6ezg1q2LarAEaVnNvZ26hVqzZdQQH1wcNogM=
 webtyp.com/fmt v1.0.0/go.mod h1:FmTxx713R45J21kbH5JOmKGaaCap3fJPA9Yl2n4Ch7U=
 webtyp.com/model v0.2.12 h1:/6l/OqNjompAqLC2yH/YLdtQXIt2vYGJ9NoPjScvuYs=
 webtyp.com/model v0.2.12/go.mod h1:OkyYeE3GOG8eAQGhd9wVsORAhr+xYj3q8avpoGXG25c=
 webtyp.com/modfind v0.0.11 h1:CQDpcjHJNnBLSTYrlK5pEFZT54I91lXlIwXOpadVUcY=
 webtyp.com/modfind v0.0.11/go.mod h1:jEi1SwQK6pzP//tQkh6Jz+b4Kl/UtE6Iw9hH22UFRYI=
+webtyp.com/orm v0.12.20 h1:Xa4VfLq/STp3PZD4Vso7YVo4tErShocLVV7ijDIhnZM=
+webtyp.com/orm v0.12.20/go.mod h1:ULlBlCaJHOz10qSQB214efQJlME6jyIle/4L+bJ4tiw=
+webtyp.com/ormc/tests v0.0.0-20261029141258-ae8d37f24d9c h1:QKcxOBxnBKo/oIv++iTjHK7urozTUqiDC6gNPTmUeLk=
+webtyp.com/ormc/tests v0.0.0-20261029141258-ae8d37f24d9c/go.mod h1:7OoqbLDYywvuBa3leQKhBZNQA/JKdPUrCFuOEWvSj7k=
+webtyp.com/storage v0.1.8 h1:vEws2tVeJsYN5b+KLjWsxuCX2l68cuqfnUCujHclhBw=
+webtyp.com/storage v0.1.8/go.mod h1:7bwMdHoQnAO5l7weZyB6LR35TLzATR5EcWrW/pXWa5c=
+webtyp.com/time v0.6.2 h1:54zst3g0xCB5GBSH/6j9P9EmvgPRs4MDCqFyDe2L/yc=
+webtyp.com/time v0.6.2/go.mod h1:dTCSLhAwMfO+4UjixTboRsXdjss59S5/8bpB9+lqc0o=

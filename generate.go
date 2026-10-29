@@ -433,9 +433,15 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 }
 
 // refTableName is the table a foreign key points at, from the Definition variable the model names in Ref:
-// "&UserModel" → "user". The generated SchemaExt and the stubs Models returns must agree, so both call it.
+// "&UserModel" → "user". A Definition of another package keeps only its own name:
+// "&devicemanager.DeviceModel" → "device" (the Go package is not part of the table's name).
+// The generated SchemaExt and the stubs Models returns must agree, so both call it.
 func refTableName(ref string) string {
-	return ToSnakeCase(strings.TrimSuffix(strings.TrimPrefix(ref, "&"), "Model"))
+	ref = strings.TrimPrefix(ref, "&")
+	if i := strings.LastIndex(ref, "."); i >= 0 {
+		ref = ref[i+1:]
+	}
+	return ToSnakeCase(strings.TrimSuffix(ref, "Model"))
 }
 
 type modelStub struct {

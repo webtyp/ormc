@@ -496,6 +496,73 @@ func (m *RefNoColumn) SchemaExt() []model.FieldExt {
 	}
 }
 
+type ForeignRef struct {
+	Id string
+	FixtureId string
+}
+
+func (m *ForeignRef) ModelName() string { return "foreign_ref" }
+
+func (m *ForeignRef) Schema() []model.Field { return ForeignRefModel.Fields }
+
+func (m *ForeignRef) Pointers() []any { return []any{&m.Id, &m.FixtureId} }
+
+func (m *ForeignRef) IsNil() bool { return m == nil }
+
+func (m *ForeignRef) EncodeFields(w model.FieldWriter) {
+	w.String("id", m.Id)
+	w.String("fixture_id", m.FixtureId)
+}
+
+func (m *ForeignRef) DecodeFields(r model.FieldReader) {
+	if v, ok := r.String("id"); ok { m.Id = v }
+	if v, ok := r.String("fixture_id"); ok { m.FixtureId = v }
+}
+
+type ForeignRefList []*ForeignRef
+
+func (s *ForeignRefList) Len() int             { return len(*s) }
+func (s *ForeignRefList) At(i int) model.Fielder { return (*s)[i] }
+func (s *ForeignRefList) Append() model.Fielder  { v := &ForeignRef{}; *s = append(*s, v); return v }
+func (s *ForeignRefList) IsNil() bool          { return s == nil }
+func (s *ForeignRefList) EncodeFields(_ model.FieldWriter) {}
+func (s *ForeignRefList) DecodeFields(_ model.FieldReader) {}
+
+func (m *ForeignRef) Validate(action byte) error {
+	return model.ValidateFields(action, m)
+}
+
+var ForeignRef_ = struct {
+	Id string
+	FixtureId string
+}{
+	Id: "id",
+	FixtureId: "fixture_id",
+}
+
+func ReadOneForeignRef(qb *orm.QB, model *ForeignRef) (*ForeignRef, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllForeignRef(qb *orm.QB) (ForeignRefList, error) {
+	var results ForeignRefList
+	err := qb.ReadAll(
+		func() model.Model { return &ForeignRef{} },
+		func(m model.Model) { results = append(results, m.(*ForeignRef)) },
+	)
+	return results, err
+}
+
+func (m *ForeignRef) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: ForeignRefModel.Fields[1], Ref: "fixture", RefColumn: "id", OnDelete: ""},
+	}
+}
+
 type PointerReceiver struct {
 	Id string
 	Name string

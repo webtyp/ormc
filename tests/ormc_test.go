@@ -63,6 +63,8 @@ func TestOrmc(t *testing.T) {
 			"func (m *Order) SchemaExt() []model.FieldExt {",
 			"Ref: \"user\", RefColumn: \"id\"",
 			"var User_ = struct {",
+			// A table of another package: its name, never "fixtureuse.fixture".
+			"{Field: ForeignRefModel.Fields[1], Ref: \"fixture\", RefColumn: \"id\"",
 		}
 
 		for _, expected := range expectedStrings {

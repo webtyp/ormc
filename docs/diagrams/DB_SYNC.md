@@ -69,7 +69,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start(["db.Sync / db.SyncSchema"]) --> Create["Emitir ActionCreateTable<br/>(IF NOT EXISTS — idempotente)"]
+    Start(["db.Sync / db.SyncSchema"]) --> Create["Emitir CREATE TABLE IF NOT EXISTS<br/>(idempotente)"]
     Create --> InspectDB["Introspección: columnas reales en la DB<br/>(si el Executor implementa TableIntrospector)"]
     InspectDB --> LoopFields["Iterar campos del Schema() en Go"]
 

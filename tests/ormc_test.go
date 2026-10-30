@@ -65,6 +65,8 @@ func TestOrmc(t *testing.T) {
 			"var User_ = struct {",
 			// A table of another package: its name, never "fixtureuse.fixture".
 			"{Field: ForeignRefModel.Fields[1], Ref: \"fixture\", RefColumn: \"id\"",
+			// A table whose Name is not its variable's: the declared Name, never "renamed".
+			"{Field: RenamedRefModel.Fields[1], Ref: \"renamed_table\", RefColumn: \"id\"",
 		}
 
 		for _, expected := range expectedStrings {

@@ -4,6 +4,7 @@ import "webtyp.com/model"
 
 import (
 	"os"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -36,6 +37,10 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 				}
 			}
 		}
+	}
+	defs, err := o.packageDefinitions(filepath.Dir(sourceFile))
+	if err != nil {
+		return err
 	}
 	buf := fmt.Convert()
 
@@ -417,8 +422,7 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 						continue
 					}
 					if f.Ref != "" && f.Type != model.FieldStruct && f.Type != model.FieldStructSlice {
-						// Resolve Ref name from Definition variable name
-						refName := refTableName(f.Ref)
+						refName := refTable(f.Ref, sourceFile, defs)
 						buf.Write(fmt.Sprintf("\t\t{Field: %s[%d], Ref: \"%s\", RefColumn: \"%s\", OnDelete: \"%s\"},\n", schemaVar, j, refName, f.RefColumn, f.OnDelete))
 					}
 					j++
@@ -430,6 +434,43 @@ func (o *Generator) GenerateForFile(infos []StructInfo, sourceFile string) error
 
 	outName := fmt.Convert(sourceFile).TrimSuffix(".go").String() + "_orm.go"
 	return os.WriteFile(outName, buf.Bytes(), 0644)
+}
+
+// refTable is the table a foreign key points at. A Definition of the same package is found by its
+// variable and its declared Name is used: Ref: &FloorModel with Name "room_floor" → "room_floor".
+// One of another package is not parsed here and keeps refTableName's reading of the variable.
+func refTable(ref, from string, defs []StructInfo) string {
+	name := strings.TrimPrefix(ref, "&")
+	if !strings.Contains(name, ".") {
+		for _, d := range defs {
+			if d.Name+"Model" == name && filepath.Dir(d.SourceFile) == filepath.Dir(from) {
+				return d.ModelName
+			}
+		}
+	}
+	return refTableName(ref)
+}
+
+// packageDefinitions parses every Definition of the package in dir (generated and test files
+// apart), so a foreign key can name a table declared in another file of the same package.
+func (o *Generator) packageDefinitions(dir string) ([]StructInfo, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	var defs []StructInfo
+	for _, e := range entries {
+		n := e.Name()
+		if e.IsDir() || !strings.HasSuffix(n, ".go") || strings.HasSuffix(n, "_test.go") || strings.HasSuffix(n, "_orm.go") {
+			continue
+		}
+		infos, err := o.parseDefinitionsInFile(filepath.Join(dir, n))
+		if err != nil {
+			return nil, err
+		}
+		defs = append(defs, infos...)
+	}
+	return defs, nil
 }
 
 // refTableName is the table a foreign key points at, from the Definition variable the model names in Ref:
@@ -458,7 +499,7 @@ func (m *modelStub) EncodeFields(_ model.FieldWriter) {}
 func (m *modelStub) DecodeFields(_ model.FieldReader) {}
 func (m *modelStub) SchemaExt() []model.FieldExt      { return m.exts }
 
-func newModelStub(info StructInfo) *modelStub {
+func newModelStub(info StructInfo, defs []StructInfo) *modelStub {
 	stub := &modelStub{name: info.ModelName}
 	for _, f := range info.Fields {
 		var kind model.Kind
@@ -497,7 +538,7 @@ func newModelStub(info StructInfo) *modelStub {
 			NotNull: f.NotNull,
 		}
 		if f.Options != "" {
-			field.Options = &model.Definition{Name: refTableName(f.Options)}
+			field.Options = &model.Definition{Name: refTable(f.Options, info.SourceFile, defs)}
 		}
 		if f.PK || f.Unique || f.AutoInc {
 			field.DB = &model.FieldDB{PK: f.PK, Unique: f.Unique, AutoInc: f.AutoInc}
@@ -510,7 +551,7 @@ func newModelStub(info StructInfo) *modelStub {
 		}
 		stub.schema = append(stub.schema, field)
 		if f.Ref != "" {
-			refName := refTableName(f.Ref)
+			refName := refTable(f.Ref, info.SourceFile, defs)
 			stub.exts = append(stub.exts, model.FieldExt{
 				Field:     field,
 				Ref:       refName,
@@ -555,13 +596,16 @@ func (g *Generator) Models(root string) ([]model.Model, error) {
 	if err != nil {
 		return nil, err
 	}
-	var models []model.Model
+	defs := make([]StructInfo, 0, len(order))
 	for _, name := range order {
-		info := all[name]
+		defs = append(defs, all[name])
+	}
+	var models []model.Model
+	for _, info := range defs {
 		if info.NoDB {
 			continue
 		}
-		models = append(models, newModelStub(info))
+		models = append(models, newModelStub(info, defs))
 	}
 	if len(models) == 0 {
 		return nil, ErrNoModelsFound

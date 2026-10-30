@@ -70,6 +70,23 @@ var RefNoColumnModel = model.Definition{
 	},
 }
 
+// RenamedModel's table is not its variable's name: a foreign key to it must
+// read the declared Name ("renamed_table"), never guess it from "RenamedModel".
+var RenamedModel = model.Definition{
+	Name: "renamed_table",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+	},
+}
+
+var RenamedRefModel = model.Definition{
+	Name: "renamed_ref",
+	Fields: model.Fields{
+		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}},
+		{Name: "renamed_id", Type: model.Text(), Ref: &RenamedModel, DB: &model.FieldDB{RefColumn: "id"}},
+	},
+}
+
 // ForeignRefModel points at a table of another package: the foreign key must
 // name that table ("fixture"), not the Go package that declares it.
 var ForeignRefModel = model.Definition{

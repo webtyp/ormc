@@ -492,7 +492,130 @@ func ReadAllRefNoColumn(qb *orm.QB) (RefNoColumnList, error) {
 
 func (m *RefNoColumn) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: RefNoColumnModel.Fields[1], Ref: "multi_a", RefColumn: "", OnDelete: ""},
+		{Field: RefNoColumnModel.Fields[1], Ref: "multi_a_records", RefColumn: "", OnDelete: ""},
+	}
+}
+
+type Renamed struct {
+	Id string
+}
+
+func (m *Renamed) ModelName() string { return "renamed_table" }
+
+func (m *Renamed) Schema() []model.Field { return RenamedModel.Fields }
+
+func (m *Renamed) Pointers() []any { return []any{&m.Id} }
+
+func (m *Renamed) IsNil() bool { return m == nil }
+
+func (m *Renamed) EncodeFields(w model.FieldWriter) {
+	w.String("id", m.Id)
+}
+
+func (m *Renamed) DecodeFields(r model.FieldReader) {
+	if v, ok := r.String("id"); ok { m.Id = v }
+}
+
+type RenamedList []*Renamed
+
+func (s *RenamedList) Len() int             { return len(*s) }
+func (s *RenamedList) At(i int) model.Fielder { return (*s)[i] }
+func (s *RenamedList) Append() model.Fielder  { v := &Renamed{}; *s = append(*s, v); return v }
+func (s *RenamedList) IsNil() bool          { return s == nil }
+func (s *RenamedList) EncodeFields(_ model.FieldWriter) {}
+func (s *RenamedList) DecodeFields(_ model.FieldReader) {}
+
+func (m *Renamed) Validate(action byte) error {
+	return model.ValidateFields(action, m)
+}
+
+var Renamed_ = struct {
+	Id string
+}{
+	Id: "id",
+}
+
+func ReadOneRenamed(qb *orm.QB, model *Renamed) (*Renamed, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllRenamed(qb *orm.QB) (RenamedList, error) {
+	var results RenamedList
+	err := qb.ReadAll(
+		func() model.Model { return &Renamed{} },
+		func(m model.Model) { results = append(results, m.(*Renamed)) },
+	)
+	return results, err
+}
+
+type RenamedRef struct {
+	Id string
+	RenamedId string
+}
+
+func (m *RenamedRef) ModelName() string { return "renamed_ref" }
+
+func (m *RenamedRef) Schema() []model.Field { return RenamedRefModel.Fields }
+
+func (m *RenamedRef) Pointers() []any { return []any{&m.Id, &m.RenamedId} }
+
+func (m *RenamedRef) IsNil() bool { return m == nil }
+
+func (m *RenamedRef) EncodeFields(w model.FieldWriter) {
+	w.String("id", m.Id)
+	w.String("renamed_id", m.RenamedId)
+}
+
+func (m *RenamedRef) DecodeFields(r model.FieldReader) {
+	if v, ok := r.String("id"); ok { m.Id = v }
+	if v, ok := r.String("renamed_id"); ok { m.RenamedId = v }
+}
+
+type RenamedRefList []*RenamedRef
+
+func (s *RenamedRefList) Len() int             { return len(*s) }
+func (s *RenamedRefList) At(i int) model.Fielder { return (*s)[i] }
+func (s *RenamedRefList) Append() model.Fielder  { v := &RenamedRef{}; *s = append(*s, v); return v }
+func (s *RenamedRefList) IsNil() bool          { return s == nil }
+func (s *RenamedRefList) EncodeFields(_ model.FieldWriter) {}
+func (s *RenamedRefList) DecodeFields(_ model.FieldReader) {}
+
+func (m *RenamedRef) Validate(action byte) error {
+	return model.ValidateFields(action, m)
+}
+
+var RenamedRef_ = struct {
+	Id string
+	RenamedId string
+}{
+	Id: "id",
+	RenamedId: "renamed_id",
+}
+
+func ReadOneRenamedRef(qb *orm.QB, model *RenamedRef) (*RenamedRef, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllRenamedRef(qb *orm.QB) (RenamedRefList, error) {
+	var results RenamedRefList
+	err := qb.ReadAll(
+		func() model.Model { return &RenamedRef{} },
+		func(m model.Model) { results = append(results, m.(*RenamedRef)) },
+	)
+	return results, err
+}
+
+func (m *RenamedRef) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: RenamedRefModel.Fields[1], Ref: "renamed_table", RefColumn: "id", OnDelete: ""},
 	}
 }
 
